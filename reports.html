@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Health Reports | Health Monitor</title>
+  <style>
+    :root {
+      --primary: #007bff;
+      --primary-dark: #0056b3;
+      --success: #28a745;
+      --warning: #ffc107;
+      --danger: #dc3545;
+      --light: #f8f9fa;
+      --dark: #343a40;
+      --border: #dee2e6;
+      --reports-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --lab-color: #17a2b8;
+      --prescription-color: #28a745;
+      --imaging-color: #6f42c1;
+      --discharge-color: #fd7e14;
+      --vaccination-color: #e83e8c;
+      --insurance-color: #20c997;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--reports-gradient);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .page-header {
+      background: white;
+      border-radius: 15px;
+      padding: 25px 30px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .page-title {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .page-title h1 {
+      color: var(--dark);
+      font-size: 28px;
+    }
+
+    .page-title .icon {
+      font-size: 36px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: var(--light);
+      color: var(--dark);
+      border: 2px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: #e9ecef;
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #218838;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #c82333;
+    }
+
+    /* Upload Section */
+    .upload-section {
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .upload-section h3 {
+      color: var(--dark);
+      margin-bottom: 20px;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .upload-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--dark);
+    }
+
+    input, select, textarea {
+      padding: 12px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .file-upload-area {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .file-upload-area:hover {
+      border-color: var(--primary);
+      background: rgba(0, 123, 255, 0.05);
+    }
+
+    .file-upload-area.dragover {
+      border-color: var(--success);
+      background: rgba(40, 167, 69, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 48px;
+      color: var(--primary);
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      color: var(--dark);
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .upload-subtext {
+      color: #6c757d;
+      font-size: 12px;
+    }
+
+    #fileInput {
+      position: absolute;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    /* Category Filter */
+    .filter-section {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .filter-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .filter-tab {
+      padding: 10px 20px;
+      background: var(--light);
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-tab.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    .filter-tab:hover {
+      transform: translateY(-2px);
+    }
+
+    /* Reports Grid */
+    .reports-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+
+    .report-card {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .report-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .report-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 15px;
+    }
+
+    .report-category {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .category-lab { background: rgba(23, 162, 184, 0.1); color: var(--lab-color); }
+    .category-prescription { background: rgba(40, 167, 69, 0.1); color: var(--prescription-color); }
+    .category-imaging { background: rgba(111, 66, 193, 0.1); color: var(--imaging-color); }
+    .category-discharge { background: rgba(253, 126, 20, 0.1); color: var(--discharge-color); }
+    .category-vaccination { background: rgba(232, 62, 140, 0.1); color: var(--vaccination-color); }
+    .category-insurance { background: rgba(32, 201, 151, 0.1); color: var(--insurance-color); }
+
+    .report-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .action-btn {
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .view-btn {
+      background: rgba(0, 123, 255, 0.1);
+      color: var(--primary);
+    }
+
+    .delete-btn {
+      background: rgba(220, 53, 69, 0.1);
+      color: var(--danger);
+    }
+
+    .action-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .report-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .report-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 15px;
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #6c757d;
+    }
+
+    .report-notes {
+      background: var(--light);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #6c757d;
+      border-left: 3px solid var(--primary);
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6c757d;
+    }
+
+    .empty-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+      opacity: 0.5;
+    }
+
+    /* Status Messages */
+    .status-message {
+      padding: 12px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-weight: 600;
+      display: none;
+    }
+
+    .status-message.success {
+      background: rgba(40, 167, 69, 0.1);
+      color: var(--success);
+      display: block;
+    }
+
+    .status-message.error {
+      background: rgba(220, 53, 69, 0.1);
+      color: var(--danger);
+      display: block;
+    }
+
+    .status-message.info {
+      background: rgba(0, 123, 255, 0.1);
+      color: var(--primary);
+      display: block;
+    }
+
+    /* Loading Spinner */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--light);
+      border-top: 4px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Modal for viewing reports */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+    }
+
+    .modal-content {
+      position: relative;
+      margin: 5% auto;
+      width: 90%;
+      max-width: 800px;
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 15px;
+    }
+
+    .close-modal {
+      font-size: 32px;
+      cursor: pointer;
+      color: #6c757d;
+    }
+
+    .close-modal:hover {
+      color: var(--danger);
+    }
+
+    .modal img {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .upload-form {
+        grid-template-columns: 1fr;
+      }
+      
+      .reports-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 15px;
+      }
+
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .filter-tabs {
+        justify-content: center;
+      }
+
+      .reports-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-content {
+        width: 95%;
+        margin: 10% auto;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="page-header">
+      <div class="page-title">
+        <span class="icon">📋</span>
+        <h1>Health Reports</h1>
+      </div>
+      <div>
+        <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
+          ← Back to Dashboard
+        </button>
+      </div>
+    </div>
+
+    <!-- Status Message -->
+    <div id="statusMessage" class="status-message"></div>
+
+    <!-- Upload Section -->
+    <div class="upload-section">
+      <h3>📤 Upload New Health Report</h3>
+      
+      <div class="upload-form">
+        <div class="form-group">
+          <label for="reportTitle">Report Title *</label>
+          <input type="text" id="reportTitle" placeholder="e.g., Blood Test Results" required>
+        </div>
+
+        <div class="form-group">
+          <label for="reportCategory">Category *</label>
+          <select id="reportCategory" required>
+            <option value="">Select Category</option>
+            <option value="lab">🧪 Lab Reports</option>
+            <option value="prescription">💊 Prescriptions</option>
+            <option value="imaging">🔍 X-ray/Scan/MRI</option>
+            <option value="discharge">🏥 Discharge Summary</option>
+            <option value="vaccination">💉 Vaccination Records</option>
+            <option value="insurance">🛡️ Insurance Claims</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="reportDate">Report Date *</label>
+          <input type="date" id="reportDate" required>
+        </div>
+
+        <div class="form-group">
+          <label for="doctorName">Doctor/Hospital Name</label>
+          <input type="text" id="doctorName" placeholder="Dr. Smith / City Hospital">
+        </div>
+
+        <div class="form-group full-width">
+          <label for="reportNotes">Notes (Optional)</label>
+          <textarea id="reportNotes" placeholder="Additional notes about this report..."></textarea>
+        </div>
+      </div>
+
+      <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
+        <div class="upload-icon">📄</div>
+        <div class="upload-text">Click to upload or drag and drop</div>
+        <div class="upload-subtext">Supports: PDF, JPG, PNG, DOCX (Max 10MB)</div>
+        <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.docx,.doc" multiple style="display: none;">
+      </div>
+
+      <div style="margin-top: 20px; text-align: center;">
+        <button class="btn btn-success" onclick="uploadReport()">
+          📤 Upload Report
+        </button>
+      </div>
+
+      <div class="loading" id="uploadLoading">
+        <div class="spinner"></div>
+        <p>Uploading your report...</p>
+      </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+      <div class="filter-tabs">
+        <button class="filter-tab active" onclick="filterReports('all')">
+          📋 All Reports
+        </button>
+        <button class="filter-tab" onclick="filterReports('lab')">
+          🧪 Lab Reports
+        </button>
+        <button class="filter-tab" onclick="filterReports('prescription')">
+          💊 Prescriptions
+        </button>
+        <button class="filter-tab" onclick="filterReports('imaging')">
+          🔍 Imaging
+        </button>
+        <button class="filter-tab" onclick="filterReports('discharge')">
+          🏥 Discharge
+        </button>
+        <button class="filter-tab" onclick="filterReports('vaccination')">
+          💉 Vaccination
+        </button>
+        <button class="filter-tab" onclick="filterReports('insurance')">
+          🛡️ Insurance
+        </button>
+      </div>
+    </div>
+
+    <!-- Reports Grid -->
+    <div class="reports-grid" id="reportsGrid">
+      <!-- Reports will be dynamically loaded here -->
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" id="emptyState" style="display: none;">
+      <div class="empty-icon">📭</div>
+      <h3>No Health Reports Found</h3>
+      <p>Upload your first health report to get started with organizing your medical history.</p>
+    </div>
+  </div>
+
+  <!-- Modal for viewing reports -->
+  <div id="reportModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Report Details</h2>
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+      </div>
+      <div id="modalBody">
+        <!-- Report content will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, deleteDoc, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyArghTx-mBhVMlwwiqwqfdd_v5Iv8ichmY",
+      authDomain: "health-monitoring-d1c48.firebaseapp.com",
+      projectId: "health-monitoring-d1c48",
+      storageBucket: "health-monitoring-d1c48.appspot.com",
+      messagingSenderId: "653902741322",
+      appId: "1:653902741322:web:6cd591327f96c70e908bb3",
+      measurementId: "G-VSG709Z5NT"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    let currentUser;
+    let allReports = [];
+    let currentFilter = 'all';
+
+    // Category configurations
+    const categoryConfig = {
+      'lab': { icon: '🧪', name: 'Lab Reports' },
+      'prescription': { icon: '💊', name: 'Prescriptions' },
+      'imaging': { icon: '🔍', name: 'X-ray/Scan/MRI' },
+      'discharge': { icon: '🏥', name: 'Discharge Summary' },
+      'vaccination': { icon: '💉', name: 'Vaccination Records' },
+      'insurance': { icon: '🛡️', name: 'Insurance Claims' }
+    };
+
+    // Show status message
+    function showStatus(message, type) {
+      const statusEl = document.getElementById('statusMessage');
+      statusEl.textContent = message;
+      statusEl.className = `status-message ${type}`;
+      setTimeout(() => {
+        statusEl.className = 'status-message';
+      }, 5000);
+    }
+
+    // Auth state observer
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        loadReports();
+      } else {
+        window.location.href = "login.html";
+      }
+    });
+
+    // File upload handling
+    const fileUploadArea = document.querySelector('.file-upload-area');
+    const fileInput = document.getElementById('fileInput');
+
+    fileUploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      fileUploadArea.classList.add('dragover');
+    });
+
+    fileUploadArea.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      fileUploadArea.classList.remove('dragover');
+    });
+
+    fileUploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      fileUploadArea.classList.remove('dragover');
+      
+      const files = Array.from(e.dataTransfer.files);
+      handleFileSelect(files);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      handleFileSelect(files);
+    });
+
+    function handleFileSelect(files) {
+      const validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
+      const maxSize = 10 * 1024 * 1024; // 10MB
+
+      for (let file of files) {
+        if (!validTypes.includes(file.type)) {
+          showStatus(`Invalid file type: ${file.name}. Please upload PDF, JPG, PNG, or DOCX files.`, 'error');
+          continue;
+        }
+        if (file.size > maxSize) {
+          showStatus(`File too large: ${file.name}. Maximum size is 10MB.`, 'error');
+          continue;
+        }
+      }
+
+      // Update file input for form processing
+      const dt = new DataTransfer();
+      files.forEach(file => dt.items.add(file));
+      fileInput.files = dt.files;
+
+      // Update UI to show selected files
+      if (files.length > 0) {
+        const uploadText = fileUploadArea.querySelector('.upload-text');
+        uploadText.textContent = `${files.length} file(s) selected`;
+      }
+    }
+
+    // Upload report
+    window.uploadReport = async () => {
+      const title = document.getElementById('reportTitle').value.trim();
+      const category = document.getElementById('reportCategory').value;
+      const date = document.getElementById('reportDate').value;
+      const doctor = document.getElementById('doctorName').value.trim();
+      const notes = document.getElementById('reportNotes').value.trim();
+      const files = fileInput.files;
+
+      // Validation
+      if (!title) {
+        showStatus('Please enter a report title', 'error');
+        return;
+      }
+      if (!category) {
+        showStatus('Please select a category', 'error');
+        return;
+      }
+      if (!date) {
+        showStatus('Please select report date', 'error');
+        return;
+      }
+      if (files.length === 0) {
+        showStatus('Please select at least one file to upload', 'error');
+        return;
+      }
+
+      const loading = document.getElementById('uploadLoading');
+      loading.style.display = 'block';
+
+      try {
+        const fileURLs = [];
+
+        // Upload files to Firebase Storage
+        for (let file of files) {
+          const timestamp = new Date().getTime();
+          const fileName = `${currentUser.uid}/${timestamp}_${file.name}`;
+          const storageRef = ref(storage, `health_reports/${fileName}`);
+          
+          const snapshot = await uploadBytes(storageRef, file);
+          const downloadURL = await getDownloadURL(snapshot.ref);
+          
+          fileURLs.push({
+            name: file.name,
+            url: downloadURL,
+            type: file.type,
+            size: file.size,
+            storagePath: fileName
+          });
+        }
+
+        // Save report data to Firestore
+        await addDoc(collection(db, `users/${currentUser.uid}/healthReports`), {
+          title,
+          category,
+          date,
+          doctor: doctor || 'Not specified',
+          notes: notes || '',
+          files: fileURLs,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+
+        // Reset form
+        document.getElementById('reportTitle').value = '';
+        document.getElementById('reportCategory').value = '';
+        document.getElementById('reportDate').value = '';
+        document.getElementById('doctorName').value = '';
+        document.getElementById('reportNotes').value = '';
+        fileInput.value = '';
+        
+        const uploadText = fileUploadArea.querySelector('.upload-text');
+        uploadText.textContent = 'Click to upload or drag and drop';
+
+        showStatus('Health report uploaded successfully! 🎉', 'success');
+        
+      } catch (error) {
+        console.error('Upload error:', error);
+        showStatus('Error uploading report: ' + error.message, 'error');
+      } finally {
+        loading.style.display = 'none';
+      }
+    };
+
+    // Load reports
+    function loadReports() {
+      const q = query(
+        collection(db, `users/${currentUser.uid}/healthReports`),
+        orderBy('createdAt', 'desc')
+      );
+
+      onSnapshot(q, (snapshot) => {
+        allReports = [];
+        snapshot.forEach((doc) => {
+          allReports.push({ id: doc.id, ...doc.data() });
+        });
+        
+        displayReports();
+      });
+    }
+
+    // Filter reports
+    window.filterReports = (category) => {
+      currentFilter = category;
+      
+      // Update active tab
+      document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      displayReports();
+    };
+
+    // Display reports
+    function displayReports() {
+      const reportsGrid = document.getElementById('reportsGrid');
+      const emptyState = document.getElementById('emptyState');
+      
+      let filteredReports = allReports;
+      if (currentFilter !== 'all') {
+        filteredReports = allReports.filter(report => report.category === currentFilter);
+      }
+
+      if (filteredReports.length === 0) {
+        reportsGrid.style.display = 'none';
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      reportsGrid.style.display = 'grid';
+      emptyState.style.display = 'none';
+      
+      reportsGrid.innerHTML = '';
+
+      filteredReports.forEach(report => {
+        const reportCard = createReportCard(report);
+        reportsGrid.appendChild(reportCard);
+      });
+    }
+
+    // Create report card
+    function createReportCard(report) {
+      const card = document.createElement('div');
+      card.className = 'report-card';
+      card.setAttribute('data-category', report.category);
+
+      const config = categoryConfig[report.category] || { icon: '📋', name: 'Other' };
+      const reportDate = new Date(report.date).toLocaleDateString('en-IN', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      card.innerHTML = `
+        <div class="report-header">
+          <span class="report-category category-${report.category}">
+            ${config.icon} ${config.name}
+          </span>
+          <div class="report-actions">
+            <button class="action-btn view-btn" onclick="viewReport('${report.id}')" title="View Report">
+              👁️
+            </button>
+            <button class="action-btn delete-btn" onclick="deleteReport('${report.id}')" title="Delete Report">
+              🗑️
+            </button>
+          </div>
+        </div>
+
+        <h4 class="report-title">${report.title}</h4>
+
+        <div class="report-meta">
+          <div class="meta-item">
+            <span>📅</span>
+            <span>${reportDate}</span>
+          </div>
+          <div class="meta-item">
+            <span>👨‍⚕️</span>
+            <span>${report.doctor}</span>
+          </div>
+          <div class="meta-item">
+            <span>📎</span>
+            <span>${report.files.length} file(s)</span>
+          </div>
+          <div class="meta-item">
+            <span>🕒</span>
+            <span>Uploaded ${new Date(report.createdAt.seconds * 1000).toLocaleDateString('en-IN')}</span>
+          </div>
+        </div>
+
+        ${report.notes ? `<div class="report-notes">${report.notes}</div>` : ''}
+      `;
+
+      return card;
+    }
+
+    // View report
+    window.viewReport = (reportId) => {
+      const report = allReports.find(r => r.id === reportId);
+      if (!report) return;
+
+      const modal = document.getElementById('reportModal');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalBody = document.getElementById('modalBody');
+
+      modalTitle.textContent = report.title;
+
+      const config = categoryConfig[report.category] || { icon: '📋', name: 'Other' };
+      const reportDate = new Date(report.date).toLocaleDateString('en-IN', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+
+      let filesHTML = '';
+      report.files.forEach((file, index) => {
+        if (file.type.startsWith('image/')) {
+          filesHTML += `
+            <div style="margin-bottom: 20px;">
+              <h4>${file.name}</h4>
+              <img src="${file.url}" alt="${file.name}" style="max-width: 100%; height: auto;">
+            </div>
+          `;
+        } else {
+          filesHTML += `
+            <div style="margin-bottom: 15px; padding: 15px; background: var(--light); border-radius: 8px;">
+              <h4>${file.name}</h4>
+              <p>File size: ${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+              <a href="${file.url}" target="_blank" class="btn btn-primary">📥 Download</a>
+            </div>
+          `;
+        }
+      });
+
+      modalBody.innerHTML = `
+        <div style="margin-bottom: 25px;">
+          <p><strong>📋 Category:</strong> ${config.icon} ${config.name}</p>
+          <p><strong>📅 Date:</strong> ${reportDate}</p>
+          <p><strong>👨‍⚕️ Doctor/Hospital:</strong> ${report.doctor}</p>
+          ${report.notes ? `<p><strong>📝 Notes:</strong> ${report.notes}</p>` : ''}
+        </div>
+        
+        <h3 style="margin-bottom: 15px;">📎 Files</h3>
+        ${filesHTML}
+      `;
+
+      modal.style.display = 'block';
+    };
+
+    // Close modal
+    window.closeModal = () => {
+      document.getElementById('reportModal').style.display = 'none';
+    };
+
+    // Delete report
+    window.deleteReport = async (reportId) => {
+      const report = allReports.find(r => r.id === reportId);
+      if (!report) return;
+
+      if (!confirm(`Are you sure you want to delete "${report.title}"? This action cannot be undone.`)) {
+        return;
+      }
+
+      try {
+        // Delete files from storage
+        for (let file of report.files) {
+          const fileRef = ref(storage, `health_reports/${file.storagePath}`);
+          await deleteObject(fileRef);
+        }
+
+        // Delete document from Firestore
+        await deleteDoc(doc(db, `users/${currentUser.uid}/healthReports`, reportId));
+
+        showStatus('Health report deleted successfully', 'success');
+      } catch (error) {
+        console.error('Delete error:', error);
+        showStatus('Error deleting report: ' + error.message, 'error');
+      }
+    };
+
+    // Close modal when clicking outside
+    window.onclick = (event) => {
+      const modal = document.getElementById('reportModal');
+      if (event.target === modal) {
+        closeModal();
+      }
+    };
+  </script>
+</body>
+</html>

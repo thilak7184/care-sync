@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blood Pressure Tracker | Health Monitor</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:20px}
+.container{max-width:1200px;margin:0 auto}
+.page-header{background:white;border-radius:15px;padding:25px 30px;margin-bottom:25px;box-shadow:0 4px 6px rgba(0,0,0,.1);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px}
+.page-title{display:flex;align-items:center;gap:15px}
+.page-title h1{color:#343a40;font-size:28px}
+.btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;transition:all .3s;text-decoration:none;display:inline-block}
+.btn-primary{background:#007bff;color:white}
+.btn-primary:hover{background:#0056b3;transform:translateY(-2px)}
+.btn-secondary{background:#f8f9fa;color:#343a40;border:2px solid #dee2e6}
+.current-reading,.input-section,.categories-section,.history-section{background:white;border-radius:15px;padding:30px;margin-bottom:25px;box-shadow:0 4px 6px rgba(0,0,0,.1)}
+.reading-display{display:flex;justify-content:center;align-items:center;gap:20px;margin:20px 0}
+.bp-value{font-size:48px;font-weight:bold;color:#343a40}
+.bp-status{display:inline-block;padding:10px 20px;border-radius:25px;font-weight:bold;margin-top:15px}
+.status-normal{background:rgba(40,167,69,.2);color:#28a745}
+.status-elevated{background:rgba(255,193,7,.2);color:#ffc107}
+.status-stage1{background:rgba(253,126,20,.2);color:#fd7e14}
+.status-stage2{background:rgba(220,53,69,.2);color:#dc3545}
+.status-crisis{background:rgba(114,28,36,.2);color:#721c24}
+.input-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:20px}
+.form-group{display:flex;flex-direction:column}
+label{font-weight:600;margin-bottom:8px;color:#343a40}
+input,select{padding:12px;border:2px solid #dee2e6;border-radius:8px;font-size:14px;transition:border-color .3s}
+input:focus,select:focus{outline:none;border-color:#007bff}
+.categories-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px;margin-top:20px}
+.category-card{padding:15px;border-radius:10px;border-left:4px solid}
+.category-card.normal{border-color:#28a745;background:rgba(40,167,69,.05)}
+.category-card.elevated{border-color:#ffc107;background:rgba(255,193,7,.05)}
+.category-card.stage1{border-color:#fd7e14;background:rgba(253,126,20,.05)}
+.category-card.stage2{border-color:#dc3545;background:rgba(220,53,69,.05)}
+.category-card.crisis{border-color:#721c24;background:rgba(114,28,36,.05)}
+table{width:100%;border-collapse:collapse;margin-top:20px}
+th,td{padding:12px;text-align:left;border-bottom:1px solid #dee2e6}
+th{background:#f8f9fa;font-weight:600;color:#343a40}
+.delete-btn{background:#dc3545;color:white;border:none;padding:6px 12px;border-radius:5px;cursor:pointer;font-size:12px}
+.delete-btn:hover{background:#c82333}
+.status-message{padding:12px 20px;border-radius:8px;margin-bottom:20px;font-weight:600;display:none}
+.status-message.success{background:rgba(40,167,69,.1);color:#28a745;display:block}
+.status-message.error{background:rgba(220,53,69,.1);color:#dc3545;display:block}
+@media(max-width:768px){body{padding:15px}.page-header{flex-direction:column;align-items:flex-start}.bp-value{font-size:36px}.input-grid{grid-template-columns:1fr}table{font-size:12px}th,td{padding:8px}}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="page-header">
+  <div class="page-title"><span style="font-size:36px;">❤️</span><h1>Blood Pressure Tracker</h1></div>
+  <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">← Back to Dashboard</button>
+</div>
+
+<div id="statusMessage" class="status-message"></div>
+
+<div class="current-reading">
+  <h2>Latest Reading</h2>
+  <div class="reading-display"><span class="bp-value" id="currentBP">--/--</span><span style="font-size:24px;color:#6c757d;">mmHg</span></div>
+  <div class="bp-status" id="currentStatus">No readings yet</div>
+  <p style="color:#6c757d;margin-top:10px;" id="lastReadingTime">Add your first reading below</p>
+</div>
+
+<div class="input-section">
+<h3>📝 Record New Reading</h3>
+<div class="input-grid">
+  <div class="form-group"><label for="systolic">Systolic (mmHg) *</label><input type="number" id="systolic" placeholder="120" min="70" max="250" required></div>
+  <div class="form-group"><label for="diastolic">Diastolic (mmHg) *</label><input type="number" id="diastolic" placeholder="80" min="40" max="150" required></div>
+  <div class="form-group"><label for="heartRate">Heart Rate (bpm)</label><input type="number" id="heartRate" placeholder="72" min="40" max="200"></div>
+  <div class="form-group"><label for="timeOfDay">Time of Day</label><select id="timeOfDay"><option>Morning</option><option>Afternoon</option><option>Evening</option><option>Night</option></select></div>
+</div>
+<div class="form-group" style="margin-bottom:20px;"><label for="notes">Notes (Optional)</label><input type="text" id="notes" placeholder="e.g., After exercise, Feeling stressed"></div>
+<button class="btn btn-primary" onclick="saveReading()" style="width:100%;">💾 Save Reading</button>
+</div>
+
+<div class="history-section">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+<h3>📈 Reading History</h3>
+<button class="btn btn-secondary" onclick="exportToCSV()">📥 Export CSV</button>
+</div>
+<table>
+<thead><tr><th>Date & Time</th><th>Systolic</th><th>Diastolic</th><th>Heart Rate</th><th>Time of Day</th><th>Category</th><th>Notes</th><th>Action</th></tr></thead>
+<tbody id="readingsTableBody"></tbody>
+</table>
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey:"AIzaSyArghTx-mBhVMlwwiqwqfdd_v5Iv8ichmY",
+  authDomain:"health-monitoring-d1c48.firebaseapp.com",
+  projectId:"health-monitoring-d1c48",
+  storageBucket:"health-monitoring-d1c48.appspot.com",
+  messagingSenderId:"653902741322",
+  appId:"1:653902741322:web:6cd591327f96c70e908bb3"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+let currentUser; let allReadings = [];
+
+function showStatus(msg,type='success'){const s=document.getElementById('statusMessage');s.textContent=msg;s.className=`status-message ${type}`;setTimeout(()=>{s.className='status-message'},5000)}
+function getBPCategory(s,d){if(s>=180||d>=120)return{name:'Hypertensive Crisis',class:'crisis'};if(s>=140||d>=90)return{name:'Hypertension Stage 2',class:'stage2'};if((s>=130&&s<=139)||(d>=80&&d<=89))return{name:'Hypertension Stage 1',class:'stage1'};if(s>=120&&s<=129&&d<80)return{name:'Elevated',class:'elevated'};return{name:'Normal',class:'normal'}}
+
+onAuthStateChanged(auth,user=>{if(user){currentUser=user;loadBPHistory()}else{window.location.href='login.html'}});
+
+function loadBPHistory(){
+const q=query(collection(db,`users/${currentUser.uid}/bloodPressure`),orderBy('timestamp','desc'));
+onSnapshot(q,snap=>{allReadings=[];const tbody=document.getElementById('readingsTableBody');tbody.innerHTML='';snap.forEach(docSnap=>{const data=docSnap.data();allReadings.push({id:docSnap.id,...data});const cat=getBPCategory(data.systolic,data.diastolic);const ts=data.timestamp?.toDate?.()||new Date();const row=document.createElement('tr');row.innerHTML=`<td>${ts.toLocaleString('en-IN')}</td><td><strong>${data.systolic}</strong></td><td><strong>${data.diastolic}</strong></td><td>${data.heartRate||'--'}</td><td>${data.timeOfDay||'--'}</td><td><span class="bp-status status-${cat.class}">${cat.name}</span></td><td>${data.notes||'--'}</td><td><button class="delete-btn" onclick="deleteReading('${docSnap.id}')">🗑️</button></td>`;tbody.appendChild(row);});
+if(allReadings.length>0){const latest=allReadings[0];document.getElementById('currentBP').textContent=`${latest.systolic}/${latest.diastolic}`;const cat=getBPCategory(latest.systolic,latest.diastolic);document.getElementById('currentStatus').textContent=cat.name;document.getElementById('currentStatus').className=`bp-status status-${cat.class}`;document.getElementById('lastReadingTime').textContent=`Last recorded: ${latest.timestamp.toDate().toLocaleString('en-IN')}`;}
+});
+}
+
+window.saveReading=async()=>{
+const s=parseInt(document.getElementById('systolic').value);
+const d=parseInt(document.getElementById('diastolic').value);
+const hr=parseInt(document.getElementById('heartRate').value)||null;
+const tod=document.getElementById('timeOfDay').value;
+const notes=document.getElementById('notes').value.trim();
+if(!s||!d){showStatus('Please enter both systolic and diastolic values','error');return;}
+if(s<=d){showStatus('Systolic must be greater than diastolic','error');return;}
+const cat=getBPCategory(s,d);
+try{
+await addDoc(collection(db,`users/${currentUser.uid}/bloodPressure`),{systolic:s,diastolic:d,heartRate:hr,timeOfDay:tod,notes:notes,category:cat.name,timestamp:serverTimestamp()});
+document.getElementById('systolic').value='';
+document.getElementById('diastolic').value='';
+document.getElementById('heartRate').value='';
+document.getElementById('notes').value='';
+showStatus('Blood pressure reading saved successfully! 🎉','success');
+}catch(e){showStatus('Error saving reading: '+e.message,'error');}
+}
+
+window.deleteReading=async(id)=>{if(!confirm('Are you sure you want to delete this reading?'))return;try{await deleteDoc(doc(db,`users/${currentUser.uid}/bloodPressure`,id));showStatus('Reading deleted successfully','success');}catch(e){showStatus('Error deleting reading: '+e.message,'error');}}
+
+window.exportToCSV=()=>{if(allReadings.length===0){showStatus('No readings to export','error');return;}let csv='Date,Time,Systolic,Diastolic,Heart Rate,Time of Day,Category,Notes\n';allReadings.forEach(r=>{const d=r.timestamp?.toDate?.()||new Date();csv+=`${d.toLocaleDateString('en-IN')},${d.toLocaleTimeString('en-IN')},${r.systolic},${r.diastolic},${r.heartRate||''},${r.timeOfDay||''},${r.category},"${r.notes||''}"\n`});const blob=new Blob([csv],{type:'text/csv'});const url=window.URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`bp_readings_${new Date().toISOString().split('T')[0]}.csv`;a.click();window.URL.revokeObjectURL(url);}
+</script>
+</body>
+</html>

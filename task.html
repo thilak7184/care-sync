@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Tasks | Health Monitor</title>
+  <style>
+    :root {
+      --primary: #007bff;
+      --primary-dark: #0056b3;
+      --success: #28a745;
+      --warning: #ffc107;
+      --danger: #dc3545;
+      --light: #f8f9fa;
+      --dark: #343a40;
+      --border: #dee2e6;
+      --walking-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --medicine-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --achievement-gold: #ffd700;
+    }
+
+    /* Dark mode variables */
+    [data-theme="dark"] {
+      --light: #2d2d39;
+      --dark: #ffffff;
+      --border: #444;
+      --card-bg: #1e1e24;
+      --input-bg: #2d2d39;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      transition: background 0.3s ease;
+    }
+
+    [data-theme="dark"] body {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .page-header {
+      background: white;
+      border-radius: 15px;
+      padding: 25px 30px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    [data-theme="dark"] .page-header {
+      background: var(--card-bg);
+      color: var(--dark);
+    }
+
+    .page-title {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .page-title h1 {
+      color: var(--dark);
+      font-size: 28px;
+    }
+
+    .page-title .icon {
+      font-size: 36px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: var(--light);
+      color: var(--dark);
+      border: 2px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: #e9ecef;
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+      font-size: 16px;
+      padding: 12px 24px;
+    }
+
+    .btn-success:hover {
+      background: #218838;
+      transform: scale(1.05);
+    }
+
+    .btn-success:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+      transform: none;
+      opacity: 0.6;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #c82333;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+
+    .theme-toggle:hover {
+      transform: rotate(180deg);
+    }
+
+    /* Date Display */
+    .date-display {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      position: relative;
+    }
+
+    [data-theme="dark"] .date-display {
+      background: var(--card-bg);
+    }
+
+    .date-display h2 {
+      color: var(--dark);
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+
+    .date-display p {
+      color: #6c757d;
+      font-size: 14px;
+    }
+
+    .streak-badge {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: var(--achievement-gold);
+      color: #333;
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* Offline Indicator */
+    .offline-indicator {
+      background: var(--danger);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      text-align: center;
+      display: none;
+    }
+
+    .offline-indicator.show {
+      display: block;
+    }
+
+    /* Task Cards Grid */
+    .tasks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 25px;
+      margin-bottom: 25px;
+    }
+
+    /* Walking Task Card */
+    .task-card {
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    [data-theme="dark"] .task-card {
+      background: var(--card-bg);
+    }
+
+    .task-card.loading::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 15px;
+      z-index: 10;
+    }
+
+    .task-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 25px;
+    }
+
+    .task-header-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .task-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      background: var(--walking-gradient);
+    }
+
+    .task-icon.medicine {
+      background: var(--medicine-gradient);
+    }
+
+    .task-info h3 {
+      color: var(--dark);
+      font-size: 22px;
+      margin-bottom: 5px;
+    }
+
+    .task-info p {
+      color: #6c757d;
+      font-size: 14px;
+    }
+
+    /* Walking Progress */
+    .walking-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .stat-box {
+      background: var(--light);
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    [data-theme="dark"] .stat-box {
+      background: var(--input-bg);
+    }
+
+    .stat-box.editable {
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .stat-box.editable:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #6c757d;
+      margin-bottom: 5px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--dark);
+    }
+
+    .stat-unit {
+      font-size: 14px;
+      color: #6c757d;
+    }
+
+    .progress-container {
+      margin: 20px 0;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: var(--dark);
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 30px;
+      background: var(--light);
+      border-radius: 15px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--walking-gradient);
+      border-radius: 15px;
+      transition: width 0.5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 12px;
+      position: relative;
+    }
+
+    .progress-bar-fill.celebrating::after {
+      content: "🎉";
+      position: absolute;
+      animation: celebrate 1s ease-out;
+    }
+
+    @keyframes celebrate {
+      0% {
+        transform: scale(0) rotate(0deg);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.5) rotate(180deg);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(2) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    .steps-input-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .steps-input-group input {
+      flex: 1;
+      padding: 12px 15px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 16px;
+      background: white;
+      color: var(--dark);
+    }
+
+    [data-theme="dark"] .steps-input-group input {
+      background: var(--input-bg);
+      color: var(--dark);
+    }
+
+    .steps-input-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .voice-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: all 0.3s;
+    }
+
+    .voice-btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .voice-btn.listening {
+      background: var(--danger);
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Medicine Reminders */
+    .medicine-schedule {
+      display: grid;
+      gap: 15px;
+    }
+
+    .medicine-item {
+      background: var(--light);
+      padding: 20px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-left: 4px solid var(--primary);
+      position: relative;
+    }
+
+    [data-theme="dark"] .medicine-item {
+      background: var(--input-bg);
+    }
+
+    .medicine-item.completed {
+      background: rgba(40, 167, 69, 0.1);
+      border-left-color: var(--success);
+    }
+
+    .medicine-details {
+      flex: 1;
+    }
+
+    .medicine-details h4 {
+      color: var(--dark);
+      font-size: 18px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .medicine-name-input {
+      border: none;
+      background: transparent;
+      border-bottom: 1px dashed var(--border);
+      padding: 2px 5px;
+      font-size: 14px;
+      color: var(--dark);
+      outline: none;
+      width: 200px;
+    }
+
+    .medicine-name-input:focus {
+      border-bottom-color: var(--primary);
+    }
+
+    .medicine-time {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #6c757d;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    .time-input {
+      padding: 8px 12px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      margin-left: 5px;
+      background: white;
+      color: var(--dark);
+    }
+
+    [data-theme="dark"] .time-input {
+      background: var(--input-bg);
+      color: var(--dark);
+    }
+
+    .time-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .medicine-status {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status-badge {
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-pending {
+      background: rgba(255, 193, 7, 0.2);
+      color: #856404;
+    }
+
+    .status-completed {
+      background: rgba(40, 167, 69, 0.2);
+      color: var(--success);
+    }
+
+    .medicine-actions {
+      display: flex;
+      gap: 5px;
+    }
+
+    .mark-complete-btn {
+      padding: 8px 16px;
+      background: var(--success);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .mark-complete-btn:hover {
+      background: #218838;
+      transform: scale(1.05);
+    }
+
+    .mark-complete-btn:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .delete-medicine-btn {
+      padding: 8px 12px;
+      background: var(--danger);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .delete-medicine-btn:hover {
+      background: #c82333;
+    }
+
+    .add-medicine-btn {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+      color: var(--dark);
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 16px;
+      transition: all 0.3s;
+      margin-top: 15px;
+    }
+
+    .add-medicine-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Notification Settings */
+    .notification-section {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 25px;
+    }
+
+    [data-theme="dark"] .notification-section {
+      background: var(--card-bg);
+    }
+
+    .notification-section h3 {
+      color: var(--dark);
+      margin-bottom: 20px;
+      font-size: 20px;
+    }
+
+    .notification-toggle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      background: var(--light);
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+
+    [data-theme="dark"] .notification-toggle {
+      background: var(--input-bg);
+    }
+
+    .toggle-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .toggle-icon {
+      font-size: 24px;
+    }
+
+    .toggle-text h4 {
+      color: var(--dark);
+      font-size: 16px;
+      margin-bottom: 3px;
+    }
+
+    .toggle-text p {
+      color: #6c757d;
+      font-size: 12px;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--success);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+
+    /* Charts Section */
+    .charts-section {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 25px;
+    }
+
+    [data-theme="dark"] .charts-section {
+      background: var(--card-bg);
+    }
+
+    .charts-section h3 {
+      color: var(--dark);
+      margin-bottom: 20px;
+      font-size: 20px;
+    }
+
+    .chart-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .chart-tab {
+      padding: 10px 20px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      color: #6c757d;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+    }
+
+    .chart-tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    .chart-container {
+      width: 100%;
+      height: 300px;
+      position: relative;
+    }
+
+    .chart-canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Task History */
+    .history-section {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    [data-theme="dark"] .history-section {
+      background: var(--card-bg);
+    }
+
+    .history-section h3 {
+      color: var(--dark);
+      margin-bottom: 20px;
+      font-size: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .history-list {
+      display: grid;
+      gap: 10px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      background: var(--light);
+      border-radius: 8px;
+    }
+
+    [data-theme="dark"] .history-item {
+      background: var(--input-bg);
+    }
+
+    .history-date {
+      color: var(--dark);
+      font-weight: 600;
+    }
+
+    .history-details {
+      display: flex;
+      gap: 20px;
+      font-size: 14px;
+      color: #6c757d;
+    }
+
+    .status-message {
+      padding: 12px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-weight: 600;
+      display: none;
+    }
+
+    .status-message.success {
+      background: rgba(40, 167, 69, 0.1);
+      color: var(--success);
+      display: block;
+    }
+
+    .status-message.error {
+      background: rgba(220, 53, 69, 0.1);
+      color: var(--danger);
+      display: block;
+    }
+
+    .status-message.info {
+      background: rgba(0, 123, 255, 0.1);
+      color: var(--primary);
+      display: block;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    [data-theme="dark"] .modal-content {
+      background: var(--card-bg);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-header h3 {
+      color: var(--dark);
+      font-size: 22px;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      color: #6c757d;
+    }
+
+    .modal-close:hover {
+      color: var(--danger);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--dark);
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      background: white;
+      color: var(--dark);
+    }
+
+    [data-theme="dark"] .form-group input,
+    [data-theme="dark"] .form-group select {
+      background: var(--input-bg);
+      color: var(--dark);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    /* Loading Spinner */
+    .spinner {
+      border: 3px solid var(--light);
+      border-top: 3px solid var(--primary);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Achievements */
+    .achievements-badge {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--achievement-gold);
+      color: #333;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+      max-width: 300px;
+      transform: translateX(400px);
+      transition: transform 0.5s ease;
+      z-index: 999;
+    }
+
+    .achievements-badge.show {
+      transform: translateX(0);
+    }
+
+    .achievements-badge h4 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    .achievements-badge p {
+      font-size: 14px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .tasks-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .walking-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .medicine-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .chart-tabs {
+        flex-wrap: wrap;
+      }
+
+      .history-details {
+        flex-direction: column;
+        gap: 5px;
+      }
+    }
+
+    /* Accessibility */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+
+    /* Focus styles for keyboard navigation */
+    *:focus-visible {
+      outline: 3px solid var(--primary);
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="page-header">
+      <div class="page-title">
+        <span class="icon" role="img" aria-label="Tasks">✅</span>
+        <h1>Daily Tasks</h1>
+      </div>
+      <div class="header-actions">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          🌙
+        </button>
+        <button class="btn btn-primary" onclick="exportToPDF()" aria-label="Export to PDF">
+          📄 Export PDF
+        </button>
+        <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'" aria-label="Back to Dashboard">
+          ← Back
+        </button>
+      </div>
+    </div>
+
+    <!-- Offline Indicator -->
+    <div class="offline-indicator" id="offlineIndicator" role="alert">
+      ⚠️ You're offline. Changes will sync when you reconnect.
+    </div>
+
+    <!-- Date Display -->
+    <div class="date-display">
+      <h2 id="currentDate"></h2>
+      <p id="currentDay">Track your daily health tasks</p>
+      <div class="streak-badge" id="streakBadge" aria-live="polite">
+        🔥 <span id="streakCount">0</span> day streak
+      </div>
+    </div>
+
+    <!-- Status Message -->
+    <div id="statusMessage" class="status-message" role="alert" aria-live="polite"></div>
+
+    <!-- Notification Settings -->
+    <div class="notification-section">
+      <h3>🔔 Notification Settings</h3>
+      <div class="notification-toggle">
+        <div class="toggle-info">
+          <span class="toggle-icon" role="img" aria-label="Medicine">💊</span>
+          <div class="toggle-text">
+            <h4>Medicine Reminders</h4>
+            <p>Get notified when it's time to take your medication</p>
+          </div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="notificationToggle" aria-label="Toggle medicine reminders">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <button class="btn btn-primary" id="enableNotificationsBtn">
+        🔔 Enable Browser Notifications
+      </button>
+    </div>
+
+    <!-- Tasks Grid -->
+    <div class="tasks-grid">
+      <!-- Walking Task -->
+      <div class="task-card" id="walkingCard">
+        <div class="task-header">
+          <div class="task-header-left">
+            <div class="task-icon" role="img" aria-label="Walking">🚶</div>
+            <div class="task-info">
+              <h3>Daily Walking Target</h3>
+              <p>Stay active and healthy</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="walking-stats">
+          <div class="stat-box">
+            <div class="stat-label">Current Steps</div>
+            <div class="stat-value" id="currentSteps" aria-live="polite">0</div>
+          </div>
+          <div class="stat-box editable" onclick="openTargetModal()" tabindex="0" role="button" aria-label="Edit target steps">
+            <div class="stat-label">Target (Click to edit)</div>
+            <div class="stat-value" id="targetSteps">10000</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Distance</div>
+            <div class="stat-value" id="distanceKm">0</div>
+            <div class="stat-unit">km</div>
+          </div>
+        </div>
+
+        <div class="progress-container">
+          <div class="progress-label">
+            <span>Progress</span>
+            <span id="progressPercent" aria-live="polite">0%</span>
+          </div>
+          <div class="progress-bar-bg" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar-fill" id="progressBar">0%</div>
+          </div>
+        </div>
+
+        <div class="steps-input-group">
+          <input 
+            type="number" 
+            id="stepsInput" 
+            placeholder="Enter steps walked" 
+            min="0" 
+            max="100000"
+            aria-label="Steps input"
+          >
+          <button class="voice-btn" id="voiceBtn" aria-label="Voice input">
+            🎤
+          </button>
+          <button class="btn btn-success" onclick="updateSteps()" aria-label="Add steps">
+            ➕ Add
+          </button>
+        </div>
+
+        <button class="btn btn-success" id="completeWalkingBtn" style="width: 100%; margin-top: 15px;" onclick="markWalkingComplete()">
+          ✓ Mark Walking Complete
+        </button>
+      </div>
+
+      <!-- Medicine Task -->
+      <div class="task-card" id="medicineCard">
+        <div class="task-header">
+          <div class="task-header-left">
+            <div class="task-icon medicine" role="img" aria-label="Medicine">💊</div>
+            <div class="task-info">
+              <h3>Medicine Schedule</h3>
+              <p>Don't miss your medications</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="medicine-schedule" id="medicineSchedule">
+          <!-- Medicine items will be dynamically added here -->
+        </div>
+
+        <button class="add-medicine-btn" onclick="addMedicineSlot()" aria-label="Add new medicine">
+          ➕ Add Medicine
+        </button>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-section">
+      <h3>📊 Progress Charts</h3>
+      <div class="chart-tabs" role="tablist">
+        <button class="chart-tab active" data-chart="weekly" role="tab" aria-selected="true">
+          Weekly
+        </button>
+        <button class="chart-tab" data-chart="monthly" role="tab" aria-selected="false">
+          Monthly
+        </button>
+      </div>
+      <div class="chart-container">
+        <canvas id="progressChart" class="chart-canvas"></canvas>
+      </div>
+    </div>
+
+    <!-- Task History -->
+    <div class="history-section">
+      <h3>
+        📊 Task Completion History
+        <button class="btn btn-sm btn-primary" onclick="loadHistory(30)" aria-label="Load 30 days history">
+          Last 30 Days
+        </button>
+      </h3>
+      <div class="history-list" id="historyList">
+        <div class="spinner"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Target Modal -->
+  <div class="modal" id="targetModal" role="dialog" aria-labelledby="targetModalTitle" aria-modal="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="targetModalTitle">Set Your Daily Target</h3>
+        <button class="modal-close" onclick="closeModal('targetModal')" aria-label="Close modal">×</button>
+      </div>
+      <form id="targetForm">
+        <div class="form-group">
+          <label for="targetStepsInput">Daily Step Goal</label>
+          <input type="number" id="targetStepsInput" min="1000" max="100000" step="100" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">
+          💾 Save Target
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Achievement Badge -->
+  <div class="achievements-badge" id="achievementBadge" role="alert" aria-live="assertive">
+    <h4 id="achievementTitle">🎉 Achievement Unlocked!</h4>
+    <p id="achievementText"></p>
+  </div>
+<script type="module" src="task.js"></script>
+</body>
+</html>
