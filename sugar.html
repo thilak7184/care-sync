@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blood Sugar Tracker | Health Monitor</title>
+  <style>
+    :root {
+      --primary: #007bff;
+      --primary-dark: #0056b3;
+      --danger: #dc3545;
+      --warning: #ffc107;
+      --success: #28a745;
+      --info: #17a2b8;
+      --light: #f8f9fa;
+      --dark: #343a40;
+      --border: #dee2e6;
+      --normal: #28a745;
+      --prediabetes: #ffc107;
+      --diabetes: #dc3545;
+      --low: #17a2b8;
+      --critical: #8b0000;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .page-header {
+      background: white;
+      border-radius: 15px;
+      padding: 25px 30px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .page-title {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .page-title h1 {
+      color: var(--dark);
+      font-size: 28px;
+    }
+
+    .page-title .icon {
+      font-size: 36px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: var(--light);
+      color: var(--dark);
+      border: 2px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: #e9ecef;
+    }
+
+    /* Main Grid */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+      margin-bottom: 25px;
+    }
+
+    /* Sugar Entry Form */
+    .sugar-entry-card {
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .sugar-entry-card h2 {
+      color: var(--dark);
+      margin-bottom: 25px;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--dark);
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .sugar-input-wrapper {
+      position: relative;
+    }
+
+    .sugar-input-wrapper input {
+      text-align: center;
+      font-size: 32px;
+      font-weight: bold;
+      padding: 20px;
+    }
+
+    .sugar-unit {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      color: var(--dark);
+      font-weight: 600;
+    }
+
+    .form-helper {
+      font-size: 12px;
+      color: #6c757d;
+      margin-top: 5px;
+    }
+
+    .test-type-selector {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .test-type-btn {
+      padding: 12px;
+      border: 2px solid var(--border);
+      background: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .test-type-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .test-type-btn:hover {
+      border-color: var(--primary);
+    }
+
+    /* Current Reading Display */
+    .current-reading {
+      background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      color: white;
+      text-align: center;
+    }
+
+    .current-reading h2 {
+      font-size: 18px;
+      margin-bottom: 20px;
+      opacity: 0.9;
+    }
+
+    .sugar-display {
+      font-size: 72px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      line-height: 1;
+    }
+
+    .sugar-unit-large {
+      font-size: 24px;
+      opacity: 0.8;
+    }
+
+    .sugar-status {
+      display: inline-block;
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .reading-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .detail-item {
+      background: rgba(255, 255, 255, 0.15);
+      padding: 15px;
+      border-radius: 10px;
+    }
+
+    .detail-label {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-bottom: 5px;
+    }
+
+    .detail-value {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    /* Sugar Guidelines */
+    .sugar-guide {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 25px;
+    }
+
+    .sugar-guide h3 {
+      color: var(--dark);
+      margin-bottom: 20px;
+      font-size: 20px;
+    }
+
+    .guide-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .guide-tab {
+      padding: 10px 20px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-weight: 600;
+      color: #6c757d;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+    }
+
+    .guide-tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    .guide-content {
+      display: none;
+    }
+
+    .guide-content.active {
+      display: block;
+    }
+
+    .category-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .category-item {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 12px 15px;
+      border-radius: 8px;
+      border-left: 4px solid;
+    }
+
+    .category-item.low {
+      background: rgba(23, 162, 184, 0.1);
+      border-color: var(--low);
+    }
+
+    .category-item.normal {
+      background: rgba(40, 167, 69, 0.1);
+      border-color: var(--normal);
+    }
+
+    .category-item.prediabetes {
+      background: rgba(255, 193, 7, 0.1);
+      border-color: var(--prediabetes);
+    }
+
+    .category-item.diabetes {
+      background: rgba(220, 53, 69, 0.1);
+      border-color: var(--diabetes);
+    }
+
+    .category-item.critical {
+      background: rgba(139, 0, 0, 0.1);
+      border-color: var(--critical);
+    }
+
+    .category-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .category-name {
+      font-weight: 600;
+      color: var(--dark);
+      min-width: 120px;
+    }
+
+    .category-range {
+      color: var(--dark);
+      font-size: 14px;
+    }
+
+    /* History Table */
+    .history-section {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .history-section h3 {
+      color: var(--dark);
+      margin-bottom: 20px;
+      font-size: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: var(--light);
+    }
+
+    th {
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--dark);
+      border-bottom: 2px solid var(--border);
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody tr:hover {
+      background: var(--light);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-low {
+      background: rgba(23, 162, 184, 0.1);
+      color: var(--low);
+    }
+
+    .badge-normal {
+      background: rgba(40, 167, 69, 0.1);
+      color: var(--normal);
+    }
+
+    .badge-prediabetes {
+      background: rgba(255, 193, 7, 0.1);
+      color: #856404;
+    }
+
+    .badge-diabetes {
+      background: rgba(220, 53, 69, 0.1);
+      color: var(--diabetes);
+    }
+
+    .badge-critical {
+      background: rgba(139, 0, 0, 0.1);
+      color: var(--critical);
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      font-size: 18px;
+      padding: 5px;
+      transition: transform 0.2s;
+    }
+
+    .delete-btn:hover {
+      transform: scale(1.2);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #6c757d;
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 15px;
+      opacity: 0.5;
+    }
+
+    /* Status Messages */
+    .status-message {
+      padding: 12px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-weight: 600;
+      display: none;
+    }
+
+    .status-message.success {
+      background: rgba(40, 167, 69, 0.1);
+      color: var(--success);
+      display: block;
+    }
+
+    .status-message.error {
+      background: rgba(220, 53, 69, 0.1);
+      color: var(--danger);
+      display: block;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .reading-details {
+        grid-template-columns: 1fr;
+      }
+
+      .sugar-display {
+        font-size: 56px;
+      }
+
+      .test-type-selector {
+        grid-template-columns: 1fr;
+      }
+
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="page-header">
+      <div class="page-title">
+        <span class="icon">🩸</span>
+        <h1>Blood Sugar Tracker</h1>
+      </div>
+      <div>
+        <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
+          ← Back to Dashboard
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="main-grid">
+      <!-- Sugar Entry Form -->
+      <div class="sugar-entry-card">
+        <h2>📝 Record New Reading</h2>
+        <div id="statusMessage" class="status-message"></div>
+        
+        <form id="sugarForm">
+          <div class="form-group">
+            <label>Test Type</label>
+            <div class="test-type-selector">
+              <button type="button" class="test-type-btn active" data-type="Fasting">Fasting</button>
+              <button type="button" class="test-type-btn" data-type="PostMeal">Post-Meal</button>
+              <button type="button" class="test-type-btn" data-type="Random">Random</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Blood Glucose Level</label>
+            <div class="sugar-input-wrapper">
+              <input type="number" id="glucoseLevel" placeholder="100" min="40" max="600" step="1" required>
+              <span class="sugar-unit">mg/dL</span>
+            </div>
+            <div class="form-helper">Normal fasting: 70-100 mg/dL</div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Measurement Time</label>
+              <select id="measurementTime">
+                <option value="Morning">Morning</option>
+                <option value="Afternoon">Afternoon</option>
+                <option value="Evening">Evening</option>
+                <option value="Night">Night</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Insulin Taken</label>
+              <select id="insulinTaken">
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Notes (Optional)</label>
+            <input type="text" id="notes" placeholder="e.g., After breakfast, Before exercise">
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%;">
+            💾 Save Reading
+          </button>
+        </form>
+      </div>
+
+      <!-- Current Reading Display -->
+      <div class="current-reading">
+        <h2>Latest Reading</h2>
+        <div class="sugar-display">
+          <span id="currentSugarDisplay">--</span>
+          <span class="sugar-unit-large">mg/dL</span>
+        </div>
+        <div class="sugar-status" id="currentStatus">No data yet</div>
+        <div class="reading-details">
+          <div class="detail-item">
+            <div class="detail-label">Test Type</div>
+            <div class="detail-value" id="currentTestType">--</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Time</div>
+            <div class="detail-value" id="currentTime">--</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Date</div>
+            <div class="detail-value" id="currentDate">--</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Insulin</div>
+            <div class="detail-value" id="currentInsulin">--</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sugar Guidelines -->
+    <div class="sugar-guide">
+      <h3>📊 Blood Sugar Guidelines (ADA Standards)</h3>
+      
+      <div class="guide-tabs">
+        <button class="guide-tab active" onclick="showGuide('fasting')">Fasting</button>
+        <button class="guide-tab" onclick="showGuide('postmeal')">Post-Meal (2hrs)</button>
+        <button class="guide-tab" onclick="showGuide('random')">Random</button>
+      </div>
+
+      <div id="fasting-guide" class="guide-content active">
+        <div class="category-list">
+          <div class="category-item low">
+            <div class="category-color" style="background: var(--low);"></div>
+            <div class="category-name">Low (Hypoglycemia)</div>
+            <div class="category-range">&lt; 70 mg/dL - Needs immediate attention</div>
+          </div>
+          <div class="category-item normal">
+            <div class="category-color" style="background: var(--normal);"></div>
+            <div class="category-name">Normal</div>
+            <div class="category-range">70-100 mg/dL</div>
+          </div>
+          <div class="category-item prediabetes">
+            <div class="category-color" style="background: var(--prediabetes);"></div>
+            <div class="category-name">Prediabetes</div>
+            <div class="category-range">100-125 mg/dL</div>
+          </div>
+          <div class="category-item diabetes">
+            <div class="category-color" style="background: var(--diabetes);"></div>
+            <div class="category-name">Diabetes</div>
+            <div class="category-range">≥ 126 mg/dL</div>
+          </div>
+          <div class="category-item critical">
+            <div class="category-color" style="background: var(--critical);"></div>
+            <div class="category-name">Critical High</div>
+            <div class="category-range">&gt; 300 mg/dL - Seek medical attention!</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="postmeal-guide" class="guide-content">
+        <div class="category-list">
+          <div class="category-item low">
+            <div class="category-color" style="background: var(--low);"></div>
+            <div class="category-name">Low</div>
+            <div class="category-range">&lt; 70 mg/dL</div>
+          </div>
+          <div class="category-item normal">
+            <div class="category-color" style="background: var(--normal);"></div>
+            <div class="category-name">Normal</div>
+            <div class="category-range">&lt; 140 mg/dL</div>
+          </div>
+          <div class="category-item prediabetes">
+            <div class="category-color" style="background: var(--prediabetes);"></div>
+            <div class="category-name">Prediabetes</div>
+            <div class="category-range">140-199 mg/dL</div>
+          </div>
+          <div class="category-item diabetes">
+            <div class="category-color" style="background: var(--diabetes);"></div>
+            <div class="category-name">Diabetes</div>
+            <div class="category-range">≥ 200 mg/dL</div>
+          </div>
+          <div class="category-item critical">
+            <div class="category-color" style="background: var(--critical);"></div>
+            <div class="category-name">Critical High</div>
+            <div class="category-range">&gt; 350 mg/dL</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="random-guide" class="guide-content">
+        <div class="category-list">
+          <div class="category-item low">
+            <div class="category-color" style="background: var(--low);"></div>
+            <div class="category-name">Low</div>
+            <div class="category-range">&lt; 70 mg/dL</div>
+          </div>
+          <div class="category-item normal">
+            <div class="category-color" style="background: var(--normal);"></div>
+            <div class="category-name">Normal</div>
+            <div class="category-range">70-140 mg/dL</div>
+          </div>
+          <div class="category-item prediabetes">
+            <div class="category-color" style="background: var(--prediabetes);"></div>
+            <div class="category-name">Elevated</div>
+            <div class="category-range">140-199 mg/dL</div>
+          </div>
+          <div class="category-item diabetes">
+            <div class="category-color" style="background: var(--diabetes);"></div>
+            <div class="category-name">High (Diabetes)</div>
+            <div class="category-range">≥ 200 mg/dL</div>
+          </div>
+          <div class="category-item critical">
+            <div class="category-color" style="background: var(--critical);"></div>
+            <div class="category-name">Critical</div>
+            <div class="category-range">&gt; 300 mg/dL</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- History Table -->
+    <div class="history-section">
+      <h3>
+        📋 Reading History
+        <button class="btn btn-secondary btn-sm" onclick="exportData()">
+          📥 Export Data
+        </button>
+      </h3>
+      <div class="table-container">
+        <table id="historyTable">
+          <thead>
+            <tr>
+              <th>Date & Time</th>
+              <th>Glucose (mg/dL)</th>
+              <th>Test Type</th>
+              <th>Period</th>
+              <th>Insulin</th>
+              <th>Category</th>
+              <th>Notes</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody">
+            <tr>
+              <td colspan="8" class="empty-state">
+                <div class="empty-state-icon">📊</div>
+                <div>No readings recorded yet. Start tracking your blood sugar!</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyArghTx-mBhVMlwwiqwqfdd_v5Iv8ichmY",
+      authDomain: "health-monitoring-d1c48.firebaseapp.com",
+      projectId: "health-monitoring-d1c48",
+      storageBucket: "health-monitoring-d1c48.appspot.com",
+      messagingSenderId: "653902741322",
+      appId: "1:653902741322:web:6cd591327f96c70e908bb3",
+      measurementId: "G-VSG709Z5NT"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser;
+    let selectedTestType = 'Fasting';
+
+    // Test type selector
+    document.querySelectorAll('.test-type-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.test-type-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedTestType = btn.dataset.type;
+      });
+    });
+
+    // Determine Sugar Category based on ADA guidelines
+    function getSugarCategory(glucose, testType) {
+      if (testType === 'Fasting') {
+        if (glucose < 70) return { name: 'Low (Hypoglycemia)', class: 'low', badge: 'badge-low' };
+        if (glucose <= 100) return { name: 'Normal', class: 'normal', badge: 'badge-normal' };
+        if (glucose <= 125) return { name: 'Prediabetes', class: 'prediabetes', badge: 'badge-prediabetes' };
+        if (glucose > 300) return { name: 'Critical High', class: 'critical', badge: 'badge-critical' };
+        return { name: 'Diabetes', class: 'diabetes', badge: 'badge-diabetes' };
+      } else if (testType === 'PostMeal') {
+        if (glucose < 70) return { name: 'Low', class: 'low', badge: 'badge-low' };
+        if (glucose < 140) return { name: 'Normal', class: 'normal', badge: 'badge-normal' };
+        if (glucose <= 199) return { name: 'Prediabetes', class: 'prediabetes', badge: 'badge-prediabetes' };
+        if (glucose > 350) return { name: 'Critical High', class: 'critical', badge: 'badge-critical' };
+        return { name: 'Diabetes', class: 'diabetes', badge: 'badge-diabetes' };
+      } else { // Random
+        if (glucose < 70) return { name: 'Low', class: 'low', badge: 'badge-low' };
+        if (glucose <= 140) return { name: 'Normal', class: 'normal', badge: 'badge-normal' };
+        if (glucose <= 199) return { name: 'Elevated', class: 'prediabetes', badge: 'badge-prediabetes' };
+        if (glucose > 300) return { name: 'Critical', class: 'critical', badge: 'badge-critical' };
+        return { name: 'High (Diabetes)', class: 'diabetes', badge: 'badge-diabetes' };
+      }
+    }
+
+    // Format date and time
+    function formatDateTime(date) {
+      return new Date(date).toLocaleString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    // Show status message
+    function showStatus(message, type) {
+      const statusEl = document.getElementById('statusMessage');
+      statusEl.textContent = message;
+      statusEl.className = `status-message ${type}`;
+      setTimeout(() => {
+        statusEl.className = 'status-message';
+      }, 3000);
+    }
+
+    // Guide tab switching
+    window.showGuide = (type) => {
+      document.querySelectorAll('.guide-tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.guide-content').forEach(content => content.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById(`${type}-guide`).classList.add('active');
+    };
+
+    // Auth state observer
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUser = user;
+        loadSugarHistory();
+      } else {
+        window.location.href = "login.html";
+      }
+    });
+
+    // Form submission
+    document.getElementById('sugarForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const glucoseLevel = parseInt(document.getElementById('glucoseLevel').value);
+      const measurementTime = document.getElementById('measurementTime').value;
+      const insulinTaken = document.getElementById('insulinTaken').value;
+      const notes = document.getElementById('notes').value.trim();
+
+      const category = getSugarCategory(glucoseLevel, selectedTestType);
+
+      try {
+        await addDoc(collection(db, `users/${currentUser.uid}/bloodSugar`), {
+          glucoseLevel: glucoseLevel,
+          testType: selectedTestType,
+          measurementTime: measurementTime,
+          insulinTaken: insulinTaken,
+          notes: notes,
+          category: category.name,
+          timestamp: new Date(),
+          createdAt: new Date()
+        });
+
+        showStatus('✓ Blood sugar reading saved successfully!', 'success');
+        document.getElementById('sugarForm').reset();
+        document.querySelectorAll('.test-type-btn').forEach(b => b.classList.remove('active'));
+        document.querySelector('.test-type-btn[data-type="Fasting"]').classList.add('active');
+        selectedTestType = 'Fasting';
+      } catch (error) {
+        showStatus('Error saving reading: ' + error.message, 'error');
+      }
+    });
+
+    // Load Sugar history
+    function loadSugarHistory() {
+      const q = query(
+        collection(db, `users/${currentUser.uid}/bloodSugar`),
+        orderBy('timestamp', 'desc')
+      );
+
+      onSnapshot(q, (snapshot) => {
+        const historyBody = document.getElementById('historyBody');
+        
+        if (snapshot.empty) {
+          historyBody.innerHTML = `
+            <tr>
+              <td colspan="8" class="empty-state">
+                <div class="empty-state-icon">📊</div>
+                <div>No readings recorded yet. Start tracking your blood sugar!</div>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        historyBody.innerHTML = '';
+        
+        // Update latest reading display
+        const latestDoc = snapshot.docs[0];
+        const latestData = latestDoc.data();
+        updateCurrentReading(latestData);
+
+        // Populate table
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          const category = getSugarCategory(data.glucoseLevel, data.testType);
+          
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${formatDateTime(data.timestamp.toDate())}</td>
+            <td><strong>${data.glucoseLevel}</strong></td>
+            <td>${data.testType}</td>
+            <td>${data.measurementTime}</td>
+            <td>${data.insulinTaken}</td>
+            <td><span class="status-badge ${category.badge}">${category.name}</span></td>
+            <td>${data.notes || '--'}</td>
+            <td>
+              <button class="delete-btn" onclick="deleteReading('${doc.id}')" title="Delete reading">
+                🗑️
+              </button>
+            </td>
+          `;
+          historyBody.appendChild(row);
+        });
+      });
+    }
+
+    // Update current reading display
+    function updateCurrentReading(data) {
+      const category = getSugarCategory(data.glucoseLevel, data.testType);
+      
+      document.getElementById('currentSugarDisplay').textContent = data.glucoseLevel;
+      document.getElementById('currentStatus').textContent = category.name;
+      document.getElementById('currentTestType').textContent = data.testType;
+      document.getElementById('currentTime').textContent = data.measurementTime;
+      document.getElementById('currentDate').textContent = new Date(data.timestamp.toDate()).toLocaleDateString('en-IN');
+      document.getElementById('currentInsulin').textContent = data.insulinTaken;
+    }
+
+    // Delete reading
+    window.deleteReading = async (docId) => {
+      if (confirm('Are you sure you want to delete this reading?')) {
+        try {
+          await deleteDoc(doc(db, `users/${currentUser.uid}/bloodSugar`, docId));
+          showStatus('Reading deleted successfully', 'success');
+        } catch (error) {
+          showStatus('Error deleting reading: ' + error.message, 'error');
+        }
+      }
+    };
+
+    // Export data function
+    window.exportData = async () => {
+      const q = query(
+        collection(db, `users/${currentUser.uid}/bloodSugar`),
+        orderBy('timestamp', 'desc')
+      );
+
+      const snapshot = await getDocs(q);
+      let csvContent = "Date,Time,Glucose (mg/dL),Test Type,Period,Insulin,Category,Notes\n";
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const date = new Date(data.timestamp.toDate());
+        const category = getSugarCategory(data.glucoseLevel, data.testType);
+        
+        csvContent += `${date.toLocaleDateString()},${date.toLocaleTimeString()},${data.glucoseLevel},${data.testType},${data.measurementTime},${data.insulinTaken},${category.name},"${data.notes || ''}"\n`;
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `blood-sugar-readings-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    };
+  </script>
+</body>
+</html>
